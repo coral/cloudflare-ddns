@@ -1,5 +1,9 @@
 # cf-ddns
 
+## SLOP ALERT
+
+## THIS IS 100% SLOP
+
 `cf-ddns` is a small, single-purpose Cloudflare dynamic DNS client. It keeps one
 existing A record aligned with the public IPv4 address seen from the container.
 When the container also has working public IPv6 connectivity, it updates the
@@ -91,14 +95,6 @@ cargo run --release -- \
   --zone-id '0123456789abcdef0123456789abcdef' \
   --record-name 'home.example.com' \
   --once
-```
-
-## Development
-
-```sh
-cargo fmt --check
-cargo clippy --all-targets -- -D warnings
-cargo test
 ```
 
 ## License
