@@ -25,7 +25,14 @@ not supported.
 
 ## Run in Docker
 
-Build the image:
+The workflow publishes multi-architecture images for AMD64 and ARM64 to
+`ghcr.io/coral/cloudflare-ddns`. Pull the current image with:
+
+```sh
+docker pull ghcr.io/coral/cloudflare-ddns:latest
+```
+
+To build the same minimal image locally:
 
 ```sh
 docker build -t cf-ddns .
@@ -40,7 +47,7 @@ docker run --detach \
   --env CLOUDFLARE_API_TOKEN='replace-me' \
   --env CLOUDFLARE_ZONE_ID='0123456789abcdef0123456789abcdef' \
   --env CLOUDFLARE_RECORD_NAME='home.example.com' \
-  cf-ddns
+  ghcr.io/coral/cloudflare-ddns:latest
 ```
 
 For a one-shot job, append `--once`:
@@ -50,11 +57,31 @@ docker run --rm \
   --env CLOUDFLARE_API_TOKEN='replace-me' \
   --env CLOUDFLARE_ZONE_ID='0123456789abcdef0123456789abcdef' \
   --env CLOUDFLARE_RECORD_NAME='home.example.com' \
-  cf-ddns --once
+  ghcr.io/coral/cloudflare-ddns:latest --once
 ```
 
 Prefer injecting the token through an environment-backed secret. Supplying it
 with `--api-token` can expose it in the host process list.
+
+### Docker Compose
+
+Copy [compose.example.yaml](compose.example.yaml) to `compose.yaml`, export the
+three required variables, and start it:
+
+```sh
+export CLOUDFLARE_API_TOKEN='replace-me'
+export CLOUDFLARE_ZONE_ID='0123456789abcdef0123456789abcdef'
+export CLOUDFLARE_RECORD_NAME='home.example.com'
+docker compose up -d
+```
+
+Use a version tag instead of `latest` when you want repeatable deployments.
+Images pushed from `master` receive `latest`, `master`, and commit-SHA tags;
+Git tags such as `v1.2.3` also publish `1.2.3` and `1.2` image tags.
+
+The runtime stage is based on `scratch` and contains only the static executable.
+It runs without root privileges, capabilities, or a writable filesystem in the
+provided Compose configuration.
 
 ## Configuration
 

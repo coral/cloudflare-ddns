@@ -1,5 +1,9 @@
 .git
+.github
 .gitignore
 target
 Dockerfile*
 README.md
+LICENSE
+compose*.yaml
+.env*

@@ -1,0 +1,13 @@
+services:
+  cf-ddns:
+    image: ghcr.io/coral/cloudflare-ddns:latest
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?set CLOUDFLARE_API_TOKEN}
+      CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?set CLOUDFLARE_ZONE_ID}
+      CLOUDFLARE_RECORD_NAME: ${CLOUDFLARE_RECORD_NAME:?set CLOUDFLARE_RECORD_NAME}
