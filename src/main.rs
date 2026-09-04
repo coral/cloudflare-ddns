@@ -23,7 +23,7 @@ fn main() -> ExitCode {
     );
     let cloudflare =
         CloudflareClient::new(config.api_token, config.zone_id, env!("CARGO_PKG_VERSION"));
-    let reconciler = Reconciler::new(discovery, cloudflare, config.record_name);
+    let reconciler = Reconciler::new(discovery, cloudflare, config.record_names);
 
     loop {
         match reconciler.reconcile() {
@@ -32,7 +32,8 @@ fn main() -> ExitCode {
                     .public_ipv6
                     .map_or_else(|| "unavailable".to_owned(), |address| address.to_string());
                 eprintln!(
-                    "INFO reconciliation complete: IPv4={}, IPv6={ipv6}",
+                    "INFO reconciliation complete for {} name(s): IPv4={}, IPv6={ipv6}",
+                    report.records.len(),
                     report.public_ipv4
                 );
                 if config.once {

@@ -5,9 +5,9 @@
 ## THIS IS 100% SLOP
 
 `cf-ddns` is a small, single-purpose Cloudflare dynamic DNS client. It keeps one
-existing A record aligned with the public IPv4 address seen from the container.
-When the container also has working public IPv6 connectivity, it updates the
-existing AAAA record for the same name.
+or more existing A records aligned with the public IPv4 address seen from the
+container. When the container also has working public IPv6 connectivity, it
+updates the existing AAAA records for those names.
 
 The process reconciles immediately at startup and every five minutes afterward.
 It does not keep local state, create records, delete records, or alter record
@@ -17,8 +17,8 @@ metadata such as TTL, proxy status, comments, or tags.
 
 Create an API token scoped to the target zone with **Zone / DNS / Edit**
 permission. Copy the zone ID from the Cloudflare dashboard, then create the A
-record and, if IPv6 should be managed, the AAAA record before starting the
-client.
+records and, if IPv6 should be managed, the corresponding AAAA records before
+starting the client.
 
 Only API token authentication is supported. A global API key is intentionally
 not supported.
@@ -71,7 +71,7 @@ three required variables, and start it:
 ```sh
 export CLOUDFLARE_API_TOKEN='replace-me'
 export CLOUDFLARE_ZONE_ID='0123456789abcdef0123456789abcdef'
-export CLOUDFLARE_RECORD_NAME='home.example.com'
+export CLOUDFLARE_RECORD_NAME='home.example.com,old.example.com'
 docker compose up -d
 ```
 
@@ -91,7 +91,7 @@ Command-line options override environment variables.
 | --- | --- | --- |
 | `--api-token TOKEN` | `CLOUDFLARE_API_TOKEN` | required |
 | `--zone-id ID` | `CLOUDFLARE_ZONE_ID` | required |
-| `--record-name FQDN` | `CLOUDFLARE_RECORD_NAME` | required |
+| `--record-name FQDN` | `CLOUDFLARE_RECORD_NAME` | required; repeatable/CSV |
 | `--interval SECONDS` | `CF_DDNS_INTERVAL_SECONDS` | `300` |
 | `--ipv4-url URL` | `CF_DDNS_IPV4_URL` | Cloudflare trace |
 | `--ipv6-url URL` | `CF_DDNS_IPV6_URL` | Cloudflare trace |
@@ -103,12 +103,26 @@ and IPv6 when calling it. Replacement endpoints must use HTTPS and may return
 either a Cloudflare-style `ip=...` line or a bare IP address.
 
 Record names must be fully qualified and written as ASCII or punycode. A final
-dot is accepted and removed.
+dot is accepted and removed. To manage multiple names in the configured zone,
+use a comma-separated environment value:
 
-If IPv6 discovery fails, the cycle still succeeds after reconciling the A record
-and any existing AAAA record is left unchanged. If IPv6 is discovered but there
-is no single matching AAAA record, the client exits with an error rather than
-creating or choosing a record.
+```sh
+CLOUDFLARE_RECORD_NAME='home.coral.works,old.coral.works'
+```
+
+The equivalent CLI form repeats the option:
+
+```sh
+--record-name home.coral.works --record-name old.coral.works
+```
+
+Public addresses are discovered once per cycle and applied to every name. The
+client validates that all required records exist before updating any of them.
+
+If IPv6 discovery fails, the cycle still succeeds after reconciling the A records
+and any existing AAAA records are left unchanged. If IPv6 is discovered but any
+name lacks a single matching AAAA record, the client exits with an error rather
+than creating or choosing a record.
 
 Authentication failures and missing or duplicate required records cause daemon
 mode to exit nonzero. Network failures, Cloudflare rate limits, and Cloudflare
@@ -121,6 +135,7 @@ cargo run --release -- \
   --api-token 'replace-me' \
   --zone-id '0123456789abcdef0123456789abcdef' \
   --record-name 'home.example.com' \
+  --record-name 'old.example.com' \
   --once
 ```
 

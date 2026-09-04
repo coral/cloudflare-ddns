@@ -7,7 +7,7 @@ fn command() -> Command {
     command
         .env("CLOUDFLARE_API_TOKEN", "super-secret-token")
         .env("CLOUDFLARE_ZONE_ID", VALID_ZONE_ID)
-        .env("CLOUDFLARE_RECORD_NAME", "home.example.com");
+        .env("CLOUDFLARE_RECORD_NAME", "home.example.com,old.example.com");
     command
 }
 
@@ -35,4 +35,22 @@ fn help_never_prints_the_token_value() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("CLOUDFLARE_API_TOKEN"));
     assert!(!stdout.contains("super-secret-token"));
+}
+
+#[test]
+fn parses_comma_separated_record_names_from_environment() {
+    let output = command()
+        .env(
+            "CLOUDFLARE_RECORD_NAME",
+            "home.example.com,HOME.EXAMPLE.COM.",
+        )
+        .arg("--once")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("record name home.example.com was configured more than once")
+    );
 }
