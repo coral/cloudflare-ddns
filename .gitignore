@@ -1,0 +1,14 @@
+# Rust build output. Cargo.lock remains tracked because this is an application.
+/target/
+
+# Local configuration and secrets.
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems.
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
